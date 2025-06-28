@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Attendance Logger</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background: #f5f5f7;
+    margin: 0;
+    padding: 40px 20px;
+    color: #1c1c1e;
+    text-align: center;
+  }
+  h1 {
+    font-weight: 600;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+  }
+  button {
+    background: #007aff;
+    border: none;
+    border-radius: 14px;
+    color: white;
+    padding: 14px 28px;
+    margin: 0 10px 30px;
+    font-size: 17px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  button:hover {
+    background: #005ecb;
+    box-shadow: 0 6px 16px rgba(0, 94, 203, 0.5);
+  }
+  #logContainer {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .logColumn {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgb(0 0 0 / 0.1);
+    padding: 20px;
+    width: 260px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+  }
+  .logColumn h3 {
+    font-weight: 700;
+    margin-bottom: 16px;
+    font-size: 1.5rem;
+    border-bottom: 2px solid #e5e5ea;
+    padding-bottom: 10px;
+    color: #48484a;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+  li {
+    padding: 10px 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 1rem;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  }
+  .login {
+    background: #d4f0d6;
+    color: #237a00;
+  }
+  .logout {
+    background: #f9d6d6;
+    color: #a30000;
+  }
+  ul::-webkit-scrollbar {
+    width: 8px;
+  }
+  ul::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 4px;
+  }
+  @media (max-width: 700px) {
+    #logContainer {
+      flex-direction: column;
+      align-items: center;
+    }
+    .logColumn {
+      width: 90%;
+      max-width: 350px;
+      margin-bottom: 30px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>Attendance Logger</h1>
+<button onclick="logAttendance('in')">Log In</button>
+<button onclick="logAttendance('out')">Log Out</button>
+<button onclick="downloadTxt()">Download TXT</button>
+
+<div id="logContainer">
+  <div class="logColumn">
+    <h3>Login</h3>
+    <ul id="loginList"></ul>
+  </div>
+  <div class="logColumn">
+    <h3>Logout</h3>
+    <ul id="logoutList"></ul>
+  </div>
+</div>
+
+<script>
+  const loginLogs = JSON.parse(localStorage.getItem('loginLogs') || '[]');
+  const logoutLogs = JSON.parse(localStorage.getItem('logoutLogs') || '[]');
+
+  function displayLogs() {
+    loginLogs.forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = entry;
+      li.classList.add('login');
+      document.getElementById('loginList').appendChild(li);
+    });
+    logoutLogs.forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = entry;
+      li.classList.add('logout');
+      document.getElementById('logoutList').appendChild(li);
+    });
+  }
+
+  function logAttendance(type) {
+    const dateTime = new Date().toLocaleString();
+    if (type === 'in') {
+      const entry = `Login at ${dateTime}`;
+      loginLogs.push(entry);
+      localStorage.setItem('loginLogs', JSON.stringify(loginLogs));
+      const li = document.createElement('li');
+      li.textContent = entry;
+      li.classList.add('login');
+      document.getElementById('loginList').appendChild(li);
+    } else {
+      const entry = `Logout at ${dateTime}`;
+      logoutLogs.push(entry);
+      localStorage.setItem('logoutLogs', JSON.stringify(logoutLogs));
+      const li = document.createElement('li');
+      li.textContent = entry;
+      li.classList.add('logout');
+      document.getElementById('logoutList').appendChild(li);
+    }
+  }
+
+  function downloadTxt() {
+    if (loginLogs.length === 0 && logoutLogs.length === 0) {
+      alert('No attendance logs to download!');
+      return;
+    }
+    let content = 'Login Logs:\n' + loginLogs.join('\n') + '\n\n';
+    content += 'Logout Logs:\n' + logoutLogs.join('\n');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = 'attendance_logs.txt';
+    link.click();
+  }
+
+  window.onload = displayLogs;
+</script>
+
+</body>
+</html>
